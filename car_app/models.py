@@ -43,7 +43,7 @@ class Investment(models.Model):
     updated_at = models.DateField(auto_now=True)
     deleted_at = models.DateField(blank=True,null=True)
     petrol = models.TextField(blank=True)
-    driver_fees = models.TextField()
+    driver_fees = models.TextField(blank=True)
     extra_cost = models.TextField(blank=True)
     cost_for_home = models.TextField()
 
