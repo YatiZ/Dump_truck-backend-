@@ -9,13 +9,12 @@
 <body>
     <h1>Hello</h1>
     <div>
-        {% for car in carinfo %} 
-         <h5>{{car.car_no}}</h5>
-         
-        {% endfor %}
+        
         <div>
             {% for order in orders %} 
             <p>{{order.count}}</p>
+            <h3>{{order.car_id.car_no}}</h3>
+            <p>{{order.customer_id.customer_name}}</p>
             {% endfor %}
          </div>
     </div>

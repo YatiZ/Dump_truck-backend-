@@ -1,5 +1,5 @@
 from django.db import models
-import uuid
+
 from datetime import datetime
 # Create your models here.
 
@@ -11,37 +11,40 @@ from datetime import datetime
 class CarInfo(models.Model):
     car_no = models.TextField(max_length=50)
     maintenance =  models.TextField(blank=True)
-    # def __str__(self):
-    #     return self.car_no
+    def __str__(self):
+        return self.car_no
 
 class CustomerInfo(models.Model):
     customer_name = models.CharField(max_length=200)
     created_at = models.DateField()
     updated_at = models.DateField(auto_now_add=True)
-    deleted_at = models.DateField(auto_now_add=True)
+    deleted_at = models.DateField(auto_now_add=False, null= True)
     phone_no = models.TextField(max_length=50, blank=True)
     address = models.TextField(max_length=100, blank= True)
     def __str__(self):
         return f"{self.customer_name}{self.created_at}"
 
 class Order(models.Model):
+    # id = models.AutoField(primary_key=True, default=1)
     car_id = models.ForeignKey(CarInfo,blank=True,on_delete=models.CASCADE)
     customer_id = models.ForeignKey(CustomerInfo,blank=True,on_delete=models.CASCADE)
     created_at = models.DateField()
     updated_at = models.DateField(auto_now_add=True)
-    deleted_at = models.DateField(auto_now_add=True)
+    deleted_at = models.DateField(auto_now_add=False, null= True)
     count = models.IntegerField(blank=True)
     service_fees_per_count = models.TextField(max_length=100,blank=True)
     debt_amount = models.TextField(max_length=100,blank=True)
     description = models.TextField(max_length=200, blank=True)
     paid_amount = models.TextField(max_length=100,blank=True)
+    paid = models.BooleanField(default=False)
+    debt = models.BooleanField(default=False)
     
 
 class Investment(models.Model):
     car_id =  models.ForeignKey(CarInfo,blank=True,on_delete=models.CASCADE)
     created_at = models.DateField()
     updated_at = models.DateField(auto_now_add=True)
-    deleted_at = models.DateField(auto_now_add=True)
+    deleted_at = models.DateField(auto_now_add=False, null=True)
     petrol = models.TextField(blank=True)
     driver_fees = models.TextField(blank=True)
     extra_cost = models.TextField(blank=True)

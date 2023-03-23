@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from .models import CarInfo,CustomerInfo,Investment,Order
-from .serializers import CarInfoSerializer,CustomerInfoSerializer,OrderSerializer,InvestmentSerializer
+from .serializers import CarInfoSerializer,CustomerInfoSerializer,OrderSerializer,InvestmentSerializer,SecondOrderSerializer,PostInvestSerializer
 from rest_framework.views import APIView
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
@@ -26,10 +26,10 @@ class CarData(APIView):
 
 
 @csrf_exempt
-def CustomerApi(request, id=0):
+def CustomerApi(request, id=None):
     if request.method == 'GET':
         customer_data = CustomerInfo.objects.all()
-        customer_serializer = CustomerInfoSerializer(customer_data, many=True)
+        customer_serializer = CustomerInfoSerializer(customer_data,many = True)
         return JsonResponse(customer_serializer.data, safe=False)
     elif request.method == 'POST':
         customer_data = JSONParser().parse(request)
@@ -53,44 +53,52 @@ def CustomerApi(request, id=0):
     
 
 @csrf_exempt
-def OrderApi(request, id=0):
-    if request.method == 'GET':
-        order_data = Order.objects.all()
+def OrderApi(request, id = None):
+    if request.method == 'GET': 
+        order_data = Order.objects.all().select_related('customer_id','car_id')
         order_serializer = OrderSerializer(order_data, many=True)
         return JsonResponse(order_serializer.data, safe= False)
+
     elif request.method == 'POST':
         order_data = JSONParser().parse(request)
-        order_serializer = OrderSerializer(data=order_data)
-        if order_serializer.is_valid():
+        
+        # customer_info = CustomerInfo.objects.get(id = 1)
+        # car_id = order_data.pop('car_id')
+        order_serializer = SecondOrderSerializer(data=order_data)
+        if order_serializer.is_valid(raise_exception=True):
             order_serializer.save()
             return JsonResponse("AddedSuccessfully",safe=False)
         return JsonResponse("Failed to add",safe=False)
+
     elif request.method == 'PUT':
         order_data = JSONParser().parse(request)
         order = Order.objects.get(id = id)
-        order_serializer = OrderSerializer(order, data= order_data)
-        if order_serializer.is_valid():
-            order_serializer.save()
-            return JsonResponse("Update Successfully",safe= False)
-        return JsonResponse("Failed to Update")
+        order.paid = not order.paid
+        order.save()
+        return JsonResponse("Updated Successfully",safe=False)
+        
+
     elif request.method == 'DELETE':
         order = Order.objects.get(id = id)
         order.delete()
         return JsonResponse("Deleted Successfully",safe = False)
     
 
-@api_view(['GET','POST'])
-def InvestmentData(request):
-    method = request.method
-    if method == 'GET':
-        get_data = Investment.objects.all()
+@csrf_exempt
+def InvestmentData(request,id=None):
+    if request.method == 'GET':
+        get_data = Investment.objects.all().select_related('car_id')
         serializer = InvestmentSerializer(get_data, many=True)
-        return Response(serializer.data)
-    if method == 'POST':
-        serializer = InvestmentSerializer(data = request.data)
-        if serializer.is_valid():
+        return JsonResponse(serializer.data, safe =False)
+    elif request.method == 'POST':
+        invest_data = JSONParser().parse(request)
+        serializer = PostInvestSerializer(data= invest_data)
+        if serializer.is_valid(raise_exception=True):
             serializer.save()
-            return Response(serializer.data)
+            return JsonResponse("Added Sucessfully", safe=False)
+        return JsonResponse("Failed to add", safe=False)
+
+
 
 
 
